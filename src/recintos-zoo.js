@@ -31,17 +31,17 @@ class RecintosZoo {
         const infoAnimal = this.animaisInfo[tipoAnimal.toLowerCase()];
         let espacoNecessario = infoAnimal.tamanho * quantidade;
     
-        if (quantidade > 1) {
-            espacoNecessario += 1;
-        }
-    
         const recintosViaveis = [];
     
         this.recintos.forEach(recinto => {
             if (this.recintoEhViavel(recinto, infoAnimal, espacoNecessario)) {
                 const espacoOcupado = this.calcularEspacoOcupado(recinto);
                 const espacoLivre = recinto.tamanho - espacoOcupado;
-                recintosViaveis.push(`Recinto ${recinto.numero} (espaço livre: ${espacoLivre} total: ${recinto.tamanho})`);
+    
+                // Verificar se o espaço livre suporta a inclusão dos novos macacos
+                if (espacoLivre >= espacoNecessario) {
+                    recintosViaveis.push(`Recinto ${recinto.numero} (espaço livre: ${espacoLivre - espacoNecessario} total: ${recinto.tamanho})`);
+                }
             }
         });
     
@@ -58,7 +58,7 @@ class RecintosZoo {
         }
 
         const espacoOcupado = this.calcularEspacoOcupado(recinto);
-        if (recinto.tamanho - espacoOcupado < espacoNecessario) {
+        if ((recinto.tamanho - espacoOcupado) < espacoNecessario) {
             return false;
         }
 
@@ -67,46 +67,51 @@ class RecintosZoo {
 
     biomaEhCompativel(biomaRecinto, biomasAnimal) {
         if (Array.isArray(biomasAnimal)) {
-            return biomasAnimal.includes(biomaRecinto);
+            return biomasAnimal.some(bioma => biomaRecinto.includes(bioma)); // Verifica se o bioma inclui qualquer compatível
         }
-        return biomaRecinto === biomasAnimal;
+        return biomaRecinto.includes(biomasAnimal);
     }
 
-   calcularEspacoOcupado(recinto) {
-    let espacoOcupado = 0;
+    calcularEspacoOcupado(recinto) {
+        let espacoOcupado = 0;
 
-    // Calcula o espaço ocupado pelos animais no recinto
-    recinto.animais.forEach(animal => {
-        const infoAnimal = this.animaisInfo[animal.toLowerCase()]; // Corrige para minúsculo
-        if (infoAnimal) {
-            espacoOcupado += infoAnimal.tamanho;
+        recinto.animais.forEach(animal => {
+            const infoAnimal = this.animaisInfo[animal.toLowerCase()];
+            if (infoAnimal) {
+                espacoOcupado += infoAnimal.tamanho;
+            }
+        });
+
+        const especies = [];
+        recinto.animais.forEach(animal => {
+            const infoAnimal = this.animaisInfo[animal.toLowerCase()];
+            if (infoAnimal && !especies.includes(infoAnimal.bioma)) {
+                especies.push(infoAnimal.bioma);
+            }
+        });
+
+        if (especies.length > 1) {
+            espacoOcupado += 1; // Espaço extra por mais de uma espécie
         }
-    });
 
-    // Adiciona espaço extra se houver mais de uma espécie
-    const especies = [];
-    recinto.animais.forEach(animal => {
-        const infoAnimal = this.animaisInfo[animal.toLowerCase()]; // Corrige para minúsculo
-        if (infoAnimal && !especies.includes(infoAnimal.bioma)) {
-            especies.push(infoAnimal.bioma);
-        }
-    });
-
-    if (especies.length > 1) {
-        espacoOcupado += 1; // Espaço extra por mais de uma espécie
+        return espacoOcupado;
     }
-
-    return espacoOcupado;
-}
-
-
 
     verificaCompatibilidadeComAnimaisExistentes(recinto, infoAnimal) {
         return recinto.animais.every(animal => {
             const infoExistente = this.animaisInfo[animal.toLowerCase()];
-            return !(infoAnimal.carnivoro && infoExistente.carnivoro && infoAnimal.bioma !== infoExistente.bioma);
+            return !(infoAnimal.carnivoro && infoExistente.carnivoro) && (infoAnimal.carnivoro === infoExistente.carnivoro);
         });
     }
 }
+
+
+
+// let zoo = new RecintosZoo();
+// console.log(zoo.analisaRecintos("Macaco", 2)
+// );
+
+const resultado = new RecintosZoo().analisaRecintos('MACACO', 2);
+console.log(resultado);
 
 export { RecintosZoo as RecintosZoo };
