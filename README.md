@@ -1,3 +1,5 @@
+Obs: O commit realizado pelo perfil "aluno", foi porque precisei usar o notebook da faculdade pra concluir uma etapa do desafio, e acabei esquecendo de configurar o usuário do git.
+
 # RECINTOS DO ZOO
 
 ## COMO BAIXAR O CÓDIGO E SUBMETER MINHA SOLUÇÃO?
